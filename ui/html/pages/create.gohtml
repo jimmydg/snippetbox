@@ -1,7 +1,9 @@
+{{- /*gotype: snippetbox/cmd/web.templateData*/ -}}
 {{define "title"}}Create a New Snippet{{end}}
 
 {{define "main"}}
     <form action='/snippet/create' method='POST'>
+        <input type='hidden' name='csrf_token' value='{{.CSRFToken}}'>
         <div>
             {{with .Form.FieldErrors.title}}
                 <label class='error'>{{.}}</label>

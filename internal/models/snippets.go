@@ -19,6 +19,12 @@ type SnippetModel struct {
 	InsertStmt *sql.Stmt
 }
 
+type SnippetModelInterface interface {
+	Insert(title string, content string, expires int) (int, error)
+	Get(id int) (Snippet, error)
+	Latest() ([]Snippet, error)
+}
+
 func NewSnippetInsertModel(db *sql.DB) (*SnippetModel, error) {
 	stmt := `
 INSERT INTO snippets (title, content, created, expires)

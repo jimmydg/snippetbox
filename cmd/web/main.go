@@ -18,10 +18,12 @@ import (
 
 type application struct {
 	logger         *slog.Logger
-	snippets       *models.SnippetModel
+	snippets       models.SnippetModelInterface
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
+	users          models.UserModelInterface
+	db             *sql.DB
 }
 
 func main() {
@@ -45,6 +47,7 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
+
 	defer db.Close()
 
 	templateCache, err := newTemplateCache()
@@ -64,6 +67,8 @@ func main() {
 		templateCache:  templateCache,
 		formDecoder:    form.NewDecoder(),
 		sessionManager: sessionManager,
+		users:          &models.UserModel{DB: db},
+		db:             db,
 	}
 
 	// Init tls.Config to hold non-default TLS settings.

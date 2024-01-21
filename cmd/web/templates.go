@@ -1,23 +1,32 @@
 package main
 
 import (
+	"github.com/justinas/nosurf"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"path/filepath"
 	"snippetbox/internal/models"
+	"snippetbox/ui"
 	"time"
 )
 
 type templateData struct {
-	Snippet     models.Snippet
-	Snippets    []models.Snippet
-	CurrentYear int
-	Form        any
-	Flash       string
+	Snippet         models.Snippet
+	Snippets        []models.Snippet
+	CurrentYear     int
+	Form            any
+	Flash           string
+	IsAuthenticated bool
+	CSRFToken       string
 }
 
 func humanDate(t time.Time) string {
-	return t.Format("02 Jan 2006 at 15:04")
+	if t.IsZero() {
+		return ""
+	}
+
+	return t.UTC().Format("02 Jan 2006 at 15:04")
 }
 
 var functions = template.FuncMap{
@@ -26,33 +35,31 @@ var functions = template.FuncMap{
 
 func (app *application) newTemplateData(r *http.Request) templateData {
 	return templateData{
-		CurrentYear: time.Now().Year(),
-		Flash:       app.sessionManager.PopString(r.Context(), "flash"),
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken:       nosurf.Token(r),
 	}
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
-	pages, err := filepath.Glob("./ui/html/pages/*.gohtml")
+	cache := map[string]*template.Template{}
+
+	pages, err := fs.Glob(ui.Files, "html/pages/*.gohtml")
 	if err != nil {
 		return nil, err
 	}
 
-	cache := map[string]*template.Template{}
-
 	for _, page := range pages {
 		name := filepath.Base(page)
 
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.gohtml")
-		if err != nil {
-			return nil, err
+		patterns := []string{
+			"html/base.gohtml",
+			"html/partials/*.gohtml",
+			page,
 		}
 
-		ts, err = ts.ParseGlob("./ui/html/partials/*.gohtml")
-		if err != nil {
-			return nil, err
-		}
-
-		ts, err = ts.ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
