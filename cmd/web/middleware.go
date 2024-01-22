@@ -42,6 +42,7 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 func (app *application) requireAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !app.isAuthenticated(r) {
+			app.sessionManager.Put(r.Context(), redirectAfterLogin, r.URL.Path)
 			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 			return
 		}
@@ -64,6 +65,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
+// noSurf inits justinas/nosurf. This prevents csrf by checking for tokens.
 func noSurf(next http.Handler) http.Handler {
 	csrfHandler := nosurf.New(next)
 	csrfHandler.SetBaseCookie(http.Cookie{
@@ -76,7 +78,7 @@ func noSurf(next http.Handler) http.Handler {
 
 func (app *application) authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		id := app.sessionManager.GetInt(r.Context(), "authenticatedUserId")
+		id := app.sessionManager.GetInt(r.Context(), authenticatedUserId)
 		if id == 0 {
 			next.ServeHTTP(w, r)
 			return

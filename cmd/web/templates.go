@@ -19,6 +19,7 @@ type templateData struct {
 	Flash           string
 	IsAuthenticated bool
 	CSRFToken       string
+	User            models.User
 }
 
 func humanDate(t time.Time) string {
@@ -39,6 +40,16 @@ func (app *application) newTemplateData(r *http.Request) templateData {
 		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
 		IsAuthenticated: app.isAuthenticated(r),
 		CSRFToken:       nosurf.Token(r),
+	}
+}
+
+func (app *application) newTemplateDataForm(form any, r *http.Request) templateData {
+	return templateData{
+		CurrentYear:     time.Now().Year(),
+		Flash:           app.sessionManager.PopString(r.Context(), "flash"),
+		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken:       nosurf.Token(r),
+		Form:            form,
 	}
 }
 

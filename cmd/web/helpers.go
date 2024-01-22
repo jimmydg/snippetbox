@@ -7,6 +7,7 @@ import (
 	"github.com/go-playground/form/v4"
 	"log/slog"
 	"net/http"
+	"runtime/debug"
 )
 
 // serverError writes a log entry at Error level and sends a generic server error the user.
@@ -20,8 +21,14 @@ func (app *application) serverError(w http.ResponseWriter, r *http.Request, err 
 		err.Error(),
 		slog.String("method", method),
 		slog.String("uri", uri),
-		//slog.String("trace", string(debug.Stack())),
+		//slog.String("trace", string(debugMode.Stack())),
 	)
+
+	if app.debugMode {
+		http.Error(w, fmt.Sprintf("%s\n%s", err, string(debug.Stack())), http.StatusInternalServerError)
+		return
+	}
+
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 

@@ -24,23 +24,18 @@ type application struct {
 	sessionManager *scs.SessionManager
 	users          models.UserModelInterface
 	db             *sql.DB
+	debugMode      bool
 }
 
+var (
+	addr      = flag.String("addr", ":4000", "The TCP address for the server to listen on")
+	dsn       = flag.String("dsn", "db:db@/db?parseTime=true", "MySQL data source name")
+	debugMode = flag.Bool("debugMode", false, "Enables descriptive error messages. Only recommended during development.")
+	logger    = slog.New(slog.NewJSONHandler(os.Stdout, nil))
+)
+
 func main() {
-	addr := flag.String(
-		"addr",
-		":4000",
-		"The TCP address for the server to listen on",
-	)
-	dsn := flag.String(
-		"dsn",
-		"db:db@/db?parseTime=true",
-		"MySQL data source name",
-	)
-
 	flag.Parse()
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	db, err := openDB(*dsn)
 	if err != nil {
@@ -69,6 +64,7 @@ func main() {
 		sessionManager: sessionManager,
 		users:          &models.UserModel{DB: db},
 		db:             db,
+		debugMode:      *debugMode,
 	}
 
 	// Init tls.Config to hold non-default TLS settings.
