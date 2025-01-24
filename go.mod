@@ -12,4 +12,4 @@ require (
 	github.com/justinas/nosurf v1.1.1
 )
 
-require golang.org/x/crypto v0.18.0
+require golang.org/x/crypto v0.31.0
