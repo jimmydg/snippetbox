@@ -1,6 +1,7 @@
 module snippetbox
 
 go 1.21
+toolchain go1.24.1
 
 require (
 	github.com/alexedwards/scs/mysqlstore v0.0.0-20231113091146-cef4b05350c8
@@ -12,4 +13,4 @@ require (
 	github.com/justinas/nosurf v1.1.1
 )
 
-require golang.org/x/crypto v0.31.0
+require golang.org/x/crypto v0.35.0
