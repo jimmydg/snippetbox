@@ -1,6 +1,7 @@
 module snippetbox
 
-go 1.21
+go 1.23.0
+
 toolchain go1.24.1
 
 require (
@@ -10,7 +11,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/justinas/alice v1.2.0
-	github.com/justinas/nosurf v1.1.1
+	github.com/justinas/nosurf v1.2.0
 )
 
 require golang.org/x/crypto v0.35.0
